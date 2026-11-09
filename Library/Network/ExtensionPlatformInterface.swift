@@ -372,8 +372,10 @@ public class ExtensionPlatformInterface: NSObject, LibboxPlatformInterfaceProtoc
             interface.name = it.name
             interface.index = Int32(it.index)
             #if os(iOS)
-                interface.iPv6RouteUnavailable = path.status == .satisfied &&
-                    it.index == defaultInterfaceIndex && !it.name.hasPrefix("utun") && !path.supportsIPv6
+                if path.status == .satisfied, it.index == defaultInterfaceIndex, !it.name.hasPrefix("utun") {
+                    interface.iPv4RouteUnavailable = !path.supportsIPv4
+                    interface.iPv6RouteUnavailable = !path.supportsIPv6
+                }
             #endif
             switch it.type {
             case .wifi:
