@@ -364,11 +364,19 @@ public class ExtensionPlatformInterface: NSObject, LibboxPlatformInterfaceProtoc
         if path.status == .unsatisfied {
             return networkInterfaceArray([])
         }
+        // The path capability belongs to the default interface, not to every available interface.
+        let defaultInterfaceIndex = path.availableInterfaces.first?.index
         var interfaces: [LibboxNetworkInterface] = []
         for it in path.availableInterfaces {
             let interface = LibboxNetworkInterface()
             interface.name = it.name
             interface.index = Int32(it.index)
+            #if os(iOS)
+                if path.status == .satisfied, it.index == defaultInterfaceIndex, !it.name.hasPrefix("utun") {
+                    interface.iPv4RouteUnavailable = !path.supportsIPv4
+                    interface.iPv6RouteUnavailable = !path.supportsIPv6
+                }
+            #endif
             switch it.type {
             case .wifi:
                 interface.type = LibboxInterfaceTypeWIFI
